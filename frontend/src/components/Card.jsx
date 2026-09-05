@@ -5,10 +5,11 @@ function Card({
   className = '', 
   title, 
   header, 
-  footer 
+  footer,
+  style
 }) {
   return (
-    <div className={`card ${className}`}>
+    <div className={`card ${className}`} style={style}>
       {(title || header) && (
         <div className="card-header">
           {title ? <h3 className="card-title">{title}</h3> : header}

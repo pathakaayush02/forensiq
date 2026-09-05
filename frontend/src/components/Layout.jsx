@@ -9,6 +9,7 @@ function Layout({ children }) {
     { path: '/screening', label: 'New Screening' },
     { path: '/history', label: 'History' },
     { path: '/demo', label: 'Demo Mode' },
+    { path: '/results-test', label: 'Results Test' },
   ]
 
   return (

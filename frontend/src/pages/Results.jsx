@@ -5,6 +5,13 @@ import Card from '../components/Card'
 import Notice from '../components/Notice'
 import Badge from '../components/Badge'
 import Status from '../components/Status'
+import DemoModeIndicator from '../components/DemoModeIndicator'
+import EvidenceSection from '../components/EvidenceSection'
+import DocumentDetails from '../components/DocumentDetails'
+import ForensicViewer from '../components/ForensicViewer'
+import FaceComparison from '../components/FaceComparison'
+import CrossDocumentConsistency from '../components/CrossDocumentConsistency'
+import AuditIntegrity from '../components/AuditIntegrity'
 import { getScreening } from '../services/api'
 import { 
   createScreeningResult, 
@@ -20,6 +27,8 @@ function Results() {
   const location = useLocation()
   const navigate = useNavigate()
   const screeningId = location.state?.screeningId
+  const isDemo = location.state?.isDemo || false
+  const demoData = location.state?.demoData
 
   const [screeningResult, setScreeningResult] = useState(createScreeningResult())
   const [loading, setLoading] = useState(true)
@@ -28,6 +37,15 @@ function Results() {
 
   useEffect(() => {
     const fetchResults = async () => {
+      // Handle demo mode
+      if (isDemo && demoData) {
+        setScreeningResult(createScreeningResult(demoData))
+        setBackendAvailable(true)
+        setLoading(false)
+        return
+      }
+
+      // Handle production mode
       if (!screeningId) {
         setLoading(false)
         setBackendAvailable(false)
@@ -48,7 +66,7 @@ function Results() {
     }
 
     fetchResults()
-  }, [screeningId])
+  }, [screeningId, isDemo, demoData])
 
   const getRiskScoreColor = (score) => {
     if (score === null) return 'var(--color-text-muted)'
@@ -88,8 +106,15 @@ function Results() {
         <p>AI-assisted document screening analysis</p>
       </div>
 
+      {/* Demo Mode Indicator */}
+      {isDemo && (
+        <DemoModeIndicator 
+          message="This result uses synthetic demo data for demonstration purposes only. No real documents or identities are involved."
+        />
+      )}
+
       {/* Backend Status */}
-      {!backendAvailable && (
+      {!backendAvailable && !isDemo && (
         <Notice variant="warning" style={{ marginBottom: '2rem' }}>
           <p><strong>Development Mode:</strong> Screening results are unavailable. The backend service has not provided real screening data. This is an empty state placeholder.</p>
         </Notice>
@@ -303,6 +328,61 @@ function Results() {
               ))}
             </div>
           </Card>
+
+          {/* STEP 5: Evidence Section */}
+          {screeningResult.evidence && screeningResult.evidence.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              <EvidenceSection 
+                evidence={screeningResult.evidence} 
+                title="Evidence Analysis"
+              />
+            </div>
+          )}
+
+          {/* STEP 5: Document/OCR Details */}
+          {screeningResult.documentDetails && (
+            <div style={{ marginBottom: '2rem' }}>
+              <DocumentDetails 
+                documentDetails={screeningResult.documentDetails}
+              />
+            </div>
+          )}
+
+          {/* STEP 5: Forensic Viewer */}
+          {screeningResult.forensicData && (
+            <div style={{ marginBottom: '2rem' }}>
+              <ForensicViewer 
+                forensicData={screeningResult.forensicData}
+              />
+            </div>
+          )}
+
+          {/* STEP 5: Face Comparison */}
+          {screeningResult.faceComparison && (
+            <div style={{ marginBottom: '2rem' }}>
+              <FaceComparison 
+                faceComparison={screeningResult.faceComparison}
+              />
+            </div>
+          )}
+
+          {/* STEP 5: Cross-Document Consistency */}
+          {screeningResult.crossDocumentConsistency && (
+            <div style={{ marginBottom: '2rem' }}>
+              <CrossDocumentConsistency 
+                crossDocumentConsistency={screeningResult.crossDocumentConsistency}
+              />
+            </div>
+          )}
+
+          {/* STEP 5: Audit/Integrity */}
+          {screeningResult.auditData && (
+            <div style={{ marginBottom: '2rem' }}>
+              <AuditIntegrity 
+                auditData={screeningResult.auditData}
+              />
+            </div>
+          )}
         </>
       )}
 
