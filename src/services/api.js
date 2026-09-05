@@ -1,6 +1,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const API_V1_BASE = `${API_BASE_URL}/api/v1`
 
+// Helper function to get the root URL by stripping /api/v1 or similar path segments
+const getRootUrl = (url) => {
+  // Remove trailing /api/v1 or /api/v1/ from the URL
+  return url.replace(/\/api\/v1\/?$/, '')
+}
+
+// Derive the root URL for health check (strips /api/v1 if present)
+const ROOT_URL = getRootUrl(API_BASE_URL)
+
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -17,7 +26,7 @@ const handleNetworkError = (error) => {
 
 export async function checkHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`)
+    const response = await fetch(`${ROOT_URL}/health`)
     return await handleResponse(response)
   } catch (error) {
     return handleNetworkError(error)
