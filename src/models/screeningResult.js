@@ -36,9 +36,22 @@ export const ModuleState = {
 }
 
 /**
+ * Helper function to find the risk module in module_results
+ */
+const findRiskModule = (data) => {
+  if (!Array.isArray(data.module_results)) return null
+  return data.module_results.find(
+    item => (item?.module_name || item?.moduleName) === 'risk'
+  )
+}
+
+/**
  * Base screening result model (extended for STEP 5)
  */
-export const createScreeningResult = (data = {}) => ({
+export const createScreeningResult = (data = {}) => {
+  const riskModule = findRiskModule(data)
+  
+  return ({
   // Basic identification
   screeningId: data.screening_id || data.screeningId || null,
   status: data.status || ScreeningStatus.PENDING,
@@ -47,12 +60,12 @@ export const createScreeningResult = (data = {}) => ({
   documentType: data.document_type || data.documentType || null,
 
   // Risk assessment
-  riskScore: data.risk_score || data.riskScore || null, // 0-100
-  riskLevel: data.risk_level || data.riskLevel || null, // LOW, MEDIUM, HIGH
-  confidenceState: data.confidenceState || ConfidenceState.UNKNOWN,
+  riskScore: data.risk_score ?? data.riskScore ?? riskModule?.value?.overall_risk_score ?? null, // 0-100
+  riskLevel: data.risk_level || data.riskLevel || riskModule?.value?.risk_level || null, // LOW, MEDIUM, HIGH
+  confidenceState: data.confidenceState || riskModule?.value?.confidence_state?.toLowerCase() || ConfidenceState.UNKNOWN,
 
   // Recommendations
-  recommendation: data.recommendation || null,
+  recommendation: data.recommendation || riskModule?.value?.recommendation || null,
 
   // Module results
   moduleResults: data.module_results || data.moduleResults || {
@@ -84,7 +97,8 @@ export const createScreeningResult = (data = {}) => ({
   startedAt: data.startedAt || null,
   completedAt: data.completedAt || null,
   updatedAt: data.updated_at || data.updatedAt || null
-})
+  })
+}
 
 /**
  * Module result structure

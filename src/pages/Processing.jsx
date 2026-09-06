@@ -7,6 +7,13 @@ import Status from '../components/Status'
 import PipelineStage from '../components/PipelineStage'
 import { getScreeningStatus, getScreening } from '../services/api'
 
+const STAGE_KEY_MAP = [
+  'document_classification', 'ocr', 'ocr_normalization',
+  'document_validation', 'mrz_check', 'qr_check', 'image_forensics',
+  'face_detection', 'face_similarity', 'cross_document_consistency',
+  'risk_assessment', 'final_result', 'audit_event'
+]
+
 function Processing() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -57,6 +64,15 @@ function Processing() {
         if (status.status === 'completed') {
           setBackendStatus('healthy')
           setBackendMessage('Screening completed successfully')
+          
+          // Apply module_states mapping to show final stage status before redirect
+          if (status.module_states) {
+            setStages(prev => prev.map((stage, index) => ({
+              ...stage,
+              status: mapBackendStatus(status.module_states[STAGE_KEY_MAP[index]])
+            })))
+          }
+          
           setIsComplete(true)
           // Clear polling interval
           if (pollingIntervalRef.current) {
@@ -87,12 +103,11 @@ function Processing() {
         setBackendMessage('Screening in progress')
         
         // Map backend module states to our stages when present
-        if (status.stages && status.stages.length > 0) {
-          const mappedStages = status.stages.map(stage => ({
+        if (status.module_states) {
+          setStages(prev => prev.map((stage, index) => ({
             ...stage,
-            status: mapBackendStatus(stage.status)
-          }))
-          setStages(mappedStages)
+            status: mapBackendStatus(status.module_states[STAGE_KEY_MAP[index]])
+          })))
         }
       } catch (err) {
         console.error('Failed to fetch screening status:', err)
