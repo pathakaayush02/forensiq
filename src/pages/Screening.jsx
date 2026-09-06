@@ -99,7 +99,7 @@ function Screening() {
       if (healthStatus === 'healthy') {
         // Step 1: Create screening with passport as the primary document type
         const screeningResult = await createScreening('passport')
-        const screeningId = screeningResult.id || screeningResult.screeningId
+        const screeningId = screeningResult.screening_id
 
         if (!screeningId) {
           throw new Error('Invalid screening response: missing ID')

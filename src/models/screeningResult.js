@@ -40,22 +40,22 @@ export const ModuleState = {
  */
 export const createScreeningResult = (data = {}) => ({
   // Basic identification
-  screeningId: data.screeningId || null,
+  screeningId: data.screening_id || data.screeningId || null,
   status: data.status || ScreeningStatus.PENDING,
-  
+
   // Document information
-  documentType: data.documentType || null,
-  
+  documentType: data.document_type || data.documentType || null,
+
   // Risk assessment
-  riskScore: data.riskScore || null, // 0-100
-  riskLevel: data.riskLevel || null, // LOW, MEDIUM, HIGH
+  riskScore: data.risk_score || data.riskScore || null, // 0-100
+  riskLevel: data.risk_level || data.riskLevel || null, // LOW, MEDIUM, HIGH
   confidenceState: data.confidenceState || ConfidenceState.UNKNOWN,
-  
+
   // Recommendations
   recommendation: data.recommendation || null,
-  
+
   // Module results
-  moduleResults: data.moduleResults || {
+  moduleResults: data.module_results || data.moduleResults || {
     documentClassification: null,
     ocrExtraction: null,
     documentValidation: null,
@@ -67,23 +67,23 @@ export const createScreeningResult = (data = {}) => ({
     explainableReport: null,
     auditRecord: null
   },
-  
+
   // Evidence and reasons
   evidence: data.evidence || [],
   reasons: data.reasons || [],
-  
+
   // STEP 5 extended data structures
   documentDetails: data.documentDetails ? createDocumentDetails(data.documentDetails) : null,
   forensicData: data.forensicData ? createForensicData(data.forensicData) : null,
   faceComparison: data.faceComparison ? createFaceComparisonData(data.faceComparison) : null,
   crossDocumentConsistency: data.crossDocumentConsistency ? createCrossDocumentConsistency(data.crossDocumentConsistency) : null,
   auditData: data.auditData ? createAuditData(data.auditData) : null,
-  
+
   // Timestamps
-  createdAt: data.createdAt || null,
+  createdAt: data.created_at || data.createdAt || null,
   startedAt: data.startedAt || null,
   completedAt: data.completedAt || null,
-  updatedAt: data.updatedAt || null
+  updatedAt: data.updated_at || data.updatedAt || null
 })
 
 /**
@@ -204,7 +204,7 @@ export const createCrossDocumentConsistency = (data = {}) => ({
  * Audit/Integrity structure
  */
 export const createAuditData = (data = {}) => ({
-  screeningId: data.screeningId || null,
+  screeningId: data.screening_id || data.screeningId || null,
   timestamp: data.timestamp || null,
   recordHash: data.recordHash || null,
   previousHash: data.previousHash || null,
