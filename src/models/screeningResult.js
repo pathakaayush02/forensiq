@@ -106,7 +106,9 @@ export const createScreeningResult = (data = {}) => {
 
   // Evidence and reasons
   evidence: data.evidence || [],
-  reasons: data.reasons || [],
+  reasons: (data.reasons || riskModule?.value?.top_reasons || []).map(r =>
+    typeof r === 'string' ? { description: r, severity: null, type: null } : r
+  ),
 
   // STEP 5 extended data structures
   documentDetails: data.documentDetails ? createDocumentDetails(data.documentDetails) : null,
