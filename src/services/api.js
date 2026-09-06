@@ -32,14 +32,14 @@ export async function checkHealth() {
   }
 }
 
-export async function createScreening(payload) {
+export async function createScreening(documentType) {
   try {
     const response = await fetch(`${API_BASE_URL}/screenings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ document_type: documentType }),
     })
     return await handleResponse(response)
   } catch (error) {

@@ -97,60 +97,52 @@ function Screening() {
     try {
       // Check if backend is available
       if (healthStatus === 'healthy') {
-        try {
-          // Step 1: Create screening
-          const screeningResult = await createScreening({})
-          const screeningId = screeningResult.id || screeningResult.screeningId
+        // Step 1: Create screening with passport as the primary document type
+        const screeningResult = await createScreening('passport')
+        const screeningId = screeningResult.id || screeningResult.screeningId
 
-          if (!screeningId) {
-            throw new Error('Invalid screening response: missing ID')
-          }
-
-          // Step 2: Upload documents
-          const uploadPromises = []
-
-          // Upload passport (required)
-          if (formData.passport) {
-            uploadPromises.push(uploadDocument(screeningId, 'passport', formData.passport))
-          }
-
-          // Upload selfie (required)
-          if (formData.selfie) {
-            uploadPromises.push(uploadDocument(screeningId, 'selfie', formData.selfie))
-          }
-
-          // Upload visa (optional)
-          if (formData.visa) {
-            uploadPromises.push(uploadDocument(screeningId, 'visa', formData.visa))
-          }
-
-          // Upload additional document (optional)
-          if (formData.additional) {
-            uploadPromises.push(uploadDocument(screeningId, 'other', formData.additional))
-          }
-
-          // Wait for all uploads to complete
-          await Promise.all(uploadPromises)
-
-          // Step 3: Run screening
-          await runScreening(screeningId)
-
-          // Step 4: Navigate to processing with screening ID
-          navigate('/processing', { state: { screeningId } })
-        } catch (apiError) {
-          // API call failed
-          console.warn('API call failed, routing to processing:', apiError.message)
-          // Route to processing page for development/fallback
-          navigate('/processing')
+        if (!screeningId) {
+          throw new Error('Invalid screening response: missing ID')
         }
+
+        // Step 2: Upload documents
+        const uploadPromises = []
+
+        // Upload passport (required)
+        if (formData.passport) {
+          uploadPromises.push(uploadDocument(screeningId, 'passport', formData.passport))
+        }
+
+        // Upload selfie (required)
+        if (formData.selfie) {
+          uploadPromises.push(uploadDocument(screeningId, 'selfie', formData.selfie))
+        }
+
+        // Upload visa (optional)
+        if (formData.visa) {
+          uploadPromises.push(uploadDocument(screeningId, 'visa', formData.visa))
+        }
+
+        // Upload additional document (optional)
+        if (formData.additional) {
+          uploadPromises.push(uploadDocument(screeningId, 'other', formData.additional))
+        }
+
+        // Wait for all uploads to complete
+        await Promise.all(uploadPromises)
+
+        // Step 3: Run screening
+        await runScreening(screeningId)
+
+        // Step 4: Navigate to processing with screening ID
+        navigate('/processing', { state: { screeningId } })
       } else {
-        // Backend unavailable, route to processing for development
-        console.log('Backend unavailable, routing to processing for development')
-        navigate('/processing')
+        // Backend unavailable, show error
+        setSubmitError('Backend is currently unavailable. Please try again later.')
       }
     } catch (error) {
       console.error('Screening submission error:', error)
-      setSubmitError('Failed to start screening. Please try again.')
+      setSubmitError(`Failed to start screening: ${error.message}. Please try again.`)
     } finally {
       setIsSubmitting(false)
     }
