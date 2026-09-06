@@ -1,5 +1,4 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const API_V1_BASE = `${API_BASE_URL}/api/v1`
 
 // Helper function to get the root URL by stripping /api/v1 or similar path segments
 const getRootUrl = (url) => {
@@ -35,7 +34,7 @@ export async function checkHealth() {
 
 export async function createScreening(payload) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings`, {
+    const response = await fetch(`${API_BASE_URL}/screenings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +53,7 @@ export async function uploadDocument(screeningId, documentKind, file) {
     formData.append('document_kind', documentKind)
     formData.append('file', file)
 
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/documents`, {
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/documents`, {
       method: 'POST',
       body: formData,
     })
@@ -66,7 +65,7 @@ export async function uploadDocument(screeningId, documentKind, file) {
 
 export async function runScreening(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/run`, {
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/run`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +79,7 @@ export async function runScreening(screeningId) {
 
 export async function getScreeningStatus(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/status`)
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/status`)
     return await handleResponse(response)
   } catch (error) {
     return handleNetworkError(error)
@@ -89,7 +88,7 @@ export async function getScreeningStatus(screeningId) {
 
 export async function getScreeningResult(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/result`)
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/result`)
     return await handleResponse(response)
   } catch (error) {
     return handleNetworkError(error)
@@ -98,7 +97,7 @@ export async function getScreeningResult(screeningId) {
 
 export async function getScreening(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}`)
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}`)
     return await handleResponse(response)
   } catch (error) {
     return handleNetworkError(error)
@@ -107,7 +106,7 @@ export async function getScreening(screeningId) {
 
 export async function runOcr(screeningId, docId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/documents/${docId}/ocr`, {
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/documents/${docId}/ocr`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -121,7 +120,7 @@ export async function runOcr(screeningId, docId) {
 
 export async function validateDocument(screeningId, docId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/documents/${docId}/validate`, {
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/documents/${docId}/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -135,7 +134,7 @@ export async function validateDocument(screeningId, docId) {
 
 export async function getFaceSimilarity(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/face-similarity`, {
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/face-similarity`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -149,7 +148,7 @@ export async function getFaceSimilarity(screeningId) {
 
 export async function getAuditTrail(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/audit`)
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/audit`)
     return await handleResponse(response)
   } catch (error) {
     return handleNetworkError(error)
@@ -158,7 +157,7 @@ export async function getAuditTrail(screeningId) {
 
 export async function verifyAudit(screeningId) {
   try {
-    const response = await fetch(`${API_V1_BASE}/screenings/${screeningId}/audit/verify`, {
+    const response = await fetch(`${API_BASE_URL}/screenings/${screeningId}/audit/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
