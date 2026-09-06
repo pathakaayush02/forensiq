@@ -148,9 +148,18 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
             </div>
           </div>
           <div className="flex items-center gap-sm">
-            {auditData.integrityStatus ? (
-              <Badge variant={getIntegrityVariant(auditData.integrityStatus)}>
-                {getIntegrityLabel(auditData.integrityStatus)}
+            {/* Single integrity status badge based on verificationStatus */}
+            {verificationStatus === 'verified' ? (
+              <Badge variant="success">
+                Verification Successful
+              </Badge>
+            ) : verificationStatus === 'tampered' ? (
+              <Badge variant="error">
+                Tampering Detected
+              </Badge>
+            ) : verificationStatus === 'error' ? (
+              <Badge variant="error">
+                Verification Failed
               </Badge>
             ) : (
               <Badge variant="neutral">
@@ -168,13 +177,6 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
               >
                 {isLoading ? 'Verifying...' : 'Verify Audit'}
               </Button>
-            )}
-
-            {/* Verification Status */}
-            {verificationStatus && (
-              <Badge variant={verificationStatus === 'verified' ? 'success' : verificationStatus === 'error' ? 'error' : 'neutral'}>
-                {verificationStatus === 'verified' ? 'Verification Successful' : verificationStatus === 'tampered' ? 'Verification Failed' : 'Verification Error'}
-              </Badge>
             )}
           </div>
         </div>
