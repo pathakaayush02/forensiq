@@ -202,7 +202,7 @@ function Screening() {
           <FileUpload
             label="Passport / Primary Document"
             description="Upload passport or primary government-issued ID (synthetic/demo only)"
-            accept="image/*,.pdf"
+            accept="image/jpeg,image/png,application/pdf"
             onChange={(file) => handleFileChange('passport', file)}
             onRemove={() => handleFileRemove('passport')}
             selectedFile={formData.passport}
@@ -213,7 +213,7 @@ function Screening() {
           <FileUpload
             label="Selfie Photo"
             description="Upload recent selfie photo for face verification (synthetic/demo only)"
-            accept="image/*"
+            accept="image/jpeg,image/png"
             onChange={(file) => handleFileChange('selfie', file)}
             onRemove={() => handleFileRemove('selfie')}
             selectedFile={formData.selfie}
@@ -239,7 +239,7 @@ function Screening() {
           <FileUpload
             label="Visa Document"
             description="Upload visa or travel document if applicable (synthetic/demo only)"
-            accept="image/*,.pdf"
+            accept="image/jpeg,image/png,application/pdf"
             onChange={(file) => handleFileChange('visa', file)}
             onRemove={() => handleFileRemove('visa')}
             selectedFile={formData.visa}
@@ -250,7 +250,7 @@ function Screening() {
           <FileUpload
             label="Additional Document"
             description="Upload any additional supporting documents (synthetic/demo only)"
-            accept="image/*,.pdf"
+            accept="image/jpeg,image/png,application/pdf"
             onChange={(file) => handleFileChange('additional', file)}
             onRemove={() => handleFileRemove('additional')}
             selectedFile={formData.additional}

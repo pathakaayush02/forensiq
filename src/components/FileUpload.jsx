@@ -140,6 +140,7 @@ function FileUpload({
         id={`file-upload-${label}`}
         ref={fileInputRef}
         disabled={isUploading}
+        style={{ display: 'none' }}
       />
       
       {!selectedFile ? (
@@ -156,7 +157,17 @@ function FileUpload({
             {description}
           </p>
           <div className="flex gap-sm">
-            <Button variant="secondary" size="small" disabled={isUploading}>
+            <Button 
+              variant="secondary" 
+              size="small" 
+              disabled={isUploading}
+              onClick={(e) => {
+                e.preventDefault()
+                if (fileInputRef.current) {
+                  fileInputRef.current.click()
+                }
+              }}
+            >
               {isUploading ? 'Uploading...' : 'Select File'}
             </Button>
           </div>
