@@ -33,7 +33,9 @@ function Processing() {
   const [backendMessage, setBackendMessage] = useState('Connecting to screening service...')
   const [currentStage, setCurrentStage] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
+  const [hasFailed, setHasFailed] = useState(false)
   const [error, setError] = useState(null)
+  const pollingIntervalRef = useRef(null)
 
   useEffect(() => {
     if (!screeningId) {
@@ -50,35 +52,74 @@ function Processing() {
     const fetchStatus = async () => {
       try {
         const status = await getScreeningStatus(screeningId)
+        
+        // Check top-level status field first for completion
+        if (status.status === 'completed') {
+          setBackendStatus('healthy')
+          setBackendMessage('Screening completed successfully')
+          setIsComplete(true)
+          // Clear polling interval
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current)
+          }
+          setTimeout(() => {
+            navigate('/results', { state: { screeningId } })
+          }, 2000)
+          return
+        }
+        
+        // Check top-level status field for failure
+        if (status.status === 'failed') {
+          setBackendStatus('error')
+          setBackendMessage('Screening failed')
+          setHasFailed(true)
+          setError('The screening process encountered an error and could not complete.')
+          setStages(prev => prev.map(stage => ({ ...stage, status: 'failed' })))
+          // Clear polling interval
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current)
+          }
+          return
+        }
+        
+        // If still in progress, set healthy status and continue polling
         setBackendStatus('healthy')
         setBackendMessage('Screening in progress')
         
-        // Map backend status to our stages
-        if (status.stages) {
+        // Map backend module states to our stages when present
+        if (status.stages && status.stages.length > 0) {
           const mappedStages = status.stages.map(stage => ({
             ...stage,
             status: mapBackendStatus(stage.status)
           }))
           setStages(mappedStages)
         }
-        
-        if (status.completed) {
-          setIsComplete(true)
-          setTimeout(() => {
-            navigate('/results', { state: { screeningId } })
-          }, 2000)
-        }
       } catch (err) {
         console.error('Failed to fetch screening status:', err)
         setBackendStatus('error')
         setBackendMessage('Unable to connect to screening service')
         setStages(prev => prev.map(stage => ({ ...stage, status: 'not_available' })))
+        // Clear polling interval on error
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current)
+        }
         // Start simulation when backend fails
         simulateProgress()
       }
     }
 
+    // Set up polling interval
+    pollingIntervalRef.current = setInterval(fetchStatus, 3000) // Poll every 3 seconds
+    
+    // Initial fetch
     fetchStatus()
+    
+    // Cleanup function to clear interval on unmount
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+      }
+    }
   }, [screeningId, navigate])
 
   const simulateProgress = () => {
@@ -205,10 +246,17 @@ function Processing() {
         </Notice>
       )}
 
+      {/* Failure State */}
+      {hasFailed && (
+        <Notice variant="error" style={{ marginTop: '2rem' }}>
+          <p><strong>Screening Failed:</strong> {error}</p>
+        </Notice>
+      )}
+
       {/* Action Buttons */}
       <div className="flex justify-between items-center mt-lg">
         <Link to="/screening">
-          <Button variant="secondary" disabled={isComplete}>
+          <Button variant="secondary" disabled={isComplete || hasFailed}>
             Cancel Screening
           </Button>
         </Link>
@@ -216,6 +264,13 @@ function Processing() {
           <Link to="/results" state={{ screeningId: screeningId || 'demo-screening-id' }}>
             <Button variant="primary">
               View Results
+            </Button>
+          </Link>
+        )}
+        {hasFailed && (
+          <Link to="/screening">
+            <Button variant="primary">
+              Start New Screening
             </Button>
           </Link>
         )}
