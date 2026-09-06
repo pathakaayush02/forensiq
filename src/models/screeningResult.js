@@ -46,6 +46,40 @@ const findRiskModule = (data) => {
 }
 
 /**
+ * Helper function to transform module results into a consistent shape
+ */
+const transformModuleResults = (data) => {
+  // Prefer module_states: already a clean {name: "COMPLETED"} dict
+  if (data.module_states && typeof data.module_states === 'object' && !Array.isArray(data.module_states)) {
+    return data.module_states
+  }
+  // Fall back to flattening the module_results array into the same shape
+  if (Array.isArray(data.module_results)) {
+    return data.module_results.reduce((acc, item) => {
+      const key = item?.module_name || item?.moduleName || 'unknown'
+      acc[key] = (item?.status || 'pending').toString()
+      return acc
+    }, {})
+  }
+  // Already-camelCase object form (e.g. demo data), pass through as-is
+  if (data.moduleResults && typeof data.moduleResults === 'object' && !Array.isArray(data.moduleResults)) {
+    return data.moduleResults
+  }
+  return {
+    documentClassification: null,
+    ocrExtraction: null,
+    documentValidation: null,
+    qrMrzConsistency: null,
+    tamperingForensics: null,
+    faceVerification: null,
+    crossDocumentConsistency: null,
+    riskAssessment: null,
+    explainableReport: null,
+    auditRecord: null
+  }
+}
+
+/**
  * Base screening result model (extended for STEP 5)
  */
 export const createScreeningResult = (data = {}) => {
@@ -68,18 +102,7 @@ export const createScreeningResult = (data = {}) => {
   recommendation: data.recommendation || riskModule?.value?.recommendation || null,
 
   // Module results
-  moduleResults: data.module_results || data.moduleResults || {
-    documentClassification: null,
-    ocrExtraction: null,
-    documentValidation: null,
-    qrMrzConsistency: null,
-    tamperingForensics: null,
-    faceVerification: null,
-    crossDocumentConsistency: null,
-    riskAssessment: null,
-    explainableReport: null,
-    auditRecord: null
-  },
+  moduleResults: transformModuleResults(data),
 
   // Evidence and reasons
   evidence: data.evidence || [],
