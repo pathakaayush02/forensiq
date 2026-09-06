@@ -233,6 +233,11 @@ export const getRiskLevelLabel = (riskLevel) => {
     [RiskLevel.MEDIUM]: 'Moderate Screening Risk — Additional Review Recommended',
     [RiskLevel.HIGH]: 'High Screening Risk — Manual Review Required'
   }
+  // Case-insensitive comparison as safety net for backend casing inconsistencies
+  const normalizedLevel = riskLevel?.toLowerCase()
+  if (normalizedLevel === 'low') return labels[RiskLevel.LOW]
+  if (normalizedLevel === 'medium') return labels[RiskLevel.MEDIUM]
+  if (normalizedLevel === 'high') return labels[RiskLevel.HIGH]
   return labels[riskLevel] || 'Risk Level Unknown'
 }
 
@@ -242,5 +247,10 @@ export const getRiskLevelColor = (riskLevel) => {
     [RiskLevel.MEDIUM]: 'var(--color-warning)',
     [RiskLevel.HIGH]: 'var(--color-error)'
   }
+  // Case-insensitive comparison as safety net for backend casing inconsistencies
+  const normalizedLevel = riskLevel?.toLowerCase()
+  if (normalizedLevel === 'low') return colors[RiskLevel.LOW]
+  if (normalizedLevel === 'medium') return colors[RiskLevel.MEDIUM]
+  if (normalizedLevel === 'high') return colors[RiskLevel.HIGH]
   return colors[riskLevel] || 'var(--color-text-muted)'
 }

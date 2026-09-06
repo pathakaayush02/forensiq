@@ -4,8 +4,10 @@ import Badge from './Badge'
 import Button from './Button'
 
 function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer", onVerify = null, verificationStatus = null, isLoading = false }) {
-  // Show verify button even when audit data is not available if onVerify is provided
-  if (!auditData || !auditData.available) {
+  // Show empty state when audit data is null or audit_events is empty
+  const hasAuditEvents = auditData && auditData.audit_events && auditData.audit_events.length > 0
+  
+  if (!hasAuditEvents) {
     return (
       <Card title={title}>
         <div style={{ 
@@ -66,6 +68,17 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
     return labels[status] || status || 'Unknown'
   }
 
+  const getEventStatusVariant = (status) => {
+    if (!status) return 'neutral'
+    const statusMap = {
+      'PROCESSING': 'info',
+      'COMPLETED': 'success',
+      'FAILED': 'error',
+      'WARNING': 'warning'
+    }
+    return statusMap[status] || 'neutral'
+  }
+
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return 'Not Available'
     try {
@@ -83,6 +96,11 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
       return `${hash.substring(0, 8)}...${hash.substring(hash.length - 8)}`
     }
     return hash
+  }
+
+  const formatEventType = (eventType) => {
+    if (!eventType) return 'Unknown'
+    return eventType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   }
 
   return (
@@ -186,11 +204,11 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
               color: 'var(--color-text-primary)',
               fontFamily: 'monospace'
             }}>
-              {auditData.screeningId || 'Not Available'}
+              {auditData.screening_id || 'Not Available'}
             </span>
           </div>
 
-          {/* Timestamp */}
+          {/* Event Count */}
           <div style={{ 
             padding: 'var(--spacing-sm)',
             backgroundColor: 'var(--color-background-secondary)',
@@ -206,17 +224,17 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
               color: 'var(--color-text-muted)',
               fontWeight: 'var(--font-weight-medium)'
             }}>
-              Audit Timestamp
+              Total Events
             </span>
             <span style={{ 
               fontSize: 'var(--font-size-sm)',
               color: 'var(--color-text-primary)'
             }}>
-              {formatTimestamp(auditData.timestamp)}
+              {auditData.event_count || auditData.audit_events?.length || 0}
             </span>
           </div>
 
-          {/* Record Hash */}
+          {/* Verification Method */}
           <div style={{ 
             padding: 'var(--spacing-sm)',
             backgroundColor: 'var(--color-background-secondary)',
@@ -232,42 +250,111 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
               color: 'var(--color-text-muted)',
               fontWeight: 'var(--font-weight-medium)'
             }}>
-              Record Hash
+              Verification Method
             </span>
             <span style={{ 
               fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-primary)',
-              fontFamily: 'monospace'
+              color: 'var(--color-text-primary)'
             }}>
-              {formatHash(auditData.recordHash)}
+              {auditData.verification_method || 'Not Available'}
             </span>
           </div>
+        </div>
 
-          {/* Previous Hash */}
-          <div style={{ 
-            padding: 'var(--spacing-sm)',
-            backgroundColor: 'var(--color-background-secondary)',
-            borderRadius: 'var(--radius-sm)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 'var(--spacing-xs)'
+        {/* Audit Events List */}
+        <div style={{ marginTop: 'var(--spacing-md)' }}>
+          <h3 style={{ 
+            fontSize: 'var(--font-size-sm)',
+            fontWeight: 'var(--font-weight-semibold)',
+            color: 'var(--color-text-primary)',
+            marginBottom: 'var(--spacing-sm)'
           }}>
-            <span style={{ 
-              fontSize: 'var(--font-size-xs)',
-              color: 'var(--color-text-muted)',
-              fontWeight: 'var(--font-weight-medium)'
-            }}>
-              Previous Hash
-            </span>
-            <span style={{ 
-              fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-primary)',
-              fontFamily: 'monospace'
-            }}>
-              {formatHash(auditData.previousHash)}
-            </span>
+            Audit Events ({auditData.audit_events?.length || 0})
+          </h3>
+          <div style={{ 
+            maxHeight: '400px',
+            overflowY: 'auto',
+            border: '1px solid var(--color-border-secondary)',
+            borderRadius: 'var(--radius-md)'
+          }}>
+            {auditData.audit_events?.map((event, index) => (
+              <div 
+                key={index}
+                style={{ 
+                  padding: 'var(--spacing-sm)',
+                  borderBottom: index < auditData.audit_events.length - 1 ? '1px solid var(--color-border-secondary)' : 'none',
+                  backgroundColor: index % 2 === 0 ? 'var(--color-background-secondary)' : 'transparent'
+                }}
+              >
+                <div className="flex items-center gap-sm mb-sm">
+                  <Badge variant="neutral" style={{ fontSize: 'var(--font-size-xs)' }}>
+                    #{event.sequence_number}
+                  </Badge>
+                  <Badge variant={getEventStatusVariant(event.status)} style={{ fontSize: 'var(--font-size-xs)' }}>
+                    {event.status || 'N/A'}
+                  </Badge>
+                  <span style={{ 
+                    fontSize: 'var(--font-size-sm)',
+                    fontWeight: 'var(--font-weight-medium)',
+                    color: 'var(--color-text-primary)'
+                  }}>
+                    {formatEventType(event.event_type)}
+                  </span>
+                </div>
+                
+                {event.module_name && (
+                  <div style={{ 
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-muted)',
+                    marginBottom: 'var(--spacing-xs)'
+                  }}>
+                    <strong>Module:</strong> {event.module_name}
+                  </div>
+                )}
+                
+                <div style={{ 
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--color-text-muted)',
+                  marginBottom: 'var(--spacing-xs)'
+                }}>
+                  <strong>Timestamp:</strong> {formatTimestamp(event.timestamp)}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-sm">
+                  <div style={{ 
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-muted)'
+                  }}>
+                    <strong>Current Hash:</strong> 
+                    <span style={{ fontFamily: 'monospace', marginLeft: 'var(--spacing-xs)' }}>
+                      {formatHash(event.current_hash)}
+                    </span>
+                  </div>
+                  <div style={{ 
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-muted)'
+                  }}>
+                    <strong>Previous Hash:</strong> 
+                    <span style={{ fontFamily: 'monospace', marginLeft: 'var(--spacing-xs)' }}>
+                      {formatHash(event.previous_hash)}
+                    </span>
+                  </div>
+                </div>
+                
+                {event.canonical_payload_hash && (
+                  <div style={{ 
+                    fontSize: 'var(--font-size-xs)',
+                    color: 'var(--color-text-muted)',
+                    marginTop: 'var(--spacing-xs)'
+                  }}>
+                    <strong>Payload Hash:</strong> 
+                    <span style={{ fontFamily: 'monospace', marginLeft: 'var(--spacing-xs)' }}>
+                      {formatHash(event.canonical_payload_hash)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -282,8 +369,7 @@ function AuditIntegrity({ auditData = null, title = "Tamper-Evident Audit Layer"
         }}>
           <strong>Hash Information:</strong>
           <p style={{ margin: 'var(--spacing-xs) 0 0 0' }}>
-            The record hash provides tamper-evidence by cryptographically binding the screening data. 
-            Any modification to the record would result in a different hash value, making tampering detectable.
+            The audit trail uses SHA-256 hash chaining to provide tamper-evidence. Each event contains the hash of the previous event, creating an immutable chain. Any modification to the record would break the chain, making tampering detectable.
           </p>
         </div>
 

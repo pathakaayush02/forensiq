@@ -118,6 +118,11 @@ function Results() {
       [RiskLevel.MEDIUM]: 'warning',
       [RiskLevel.HIGH]: 'error'
     }
+    // Case-insensitive comparison as safety net for backend casing inconsistencies
+    const normalizedLevel = level?.toLowerCase()
+    if (normalizedLevel === 'low') return 'success'
+    if (normalizedLevel === 'medium') return 'warning'
+    if (normalizedLevel === 'high') return 'error'
     return variantMap[level] || 'neutral'
   }
 
